@@ -1,0 +1,17 @@
+version: "3.8"
+
+services:
+  code-server:
+    image: lscr.io/linuxserver/code-server:latest
+    container_name: code-server
+    restart: unless-stopped
+    environment:
+      - PUID=568
+      - PGID=568
+      - TZ=America/New_York
+      - PASSWORD=${CODE_SERVER_PASSWORD}
+      - DEFAULT_WORKSPACE=/workspace
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /mnt/verkamaedhr/apps/code-server/config:/config
+      - /mnt/verkamaedhr/apps/code-server/workspace:/config/workspace
