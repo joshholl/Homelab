@@ -1,0 +1,97 @@
+version: "3.8"
+
+services:
+  mediacms-migrations:
+    image: mediacms/mediacms:latest
+    container_name: mediacms-migrations
+    restart: on-failure
+    depends_on:
+      mediacms-redis:
+        condition: service_healthy
+      mediacms-db:
+        condition: service_healthy
+    environment:
+      ENABLE_UWSGI: "no"
+      ENABLE_NGINX: "no"
+      ENABLE_CELERY_SHORT: "no"
+      ENABLE_CELERY_LONG: "no"
+      ENABLE_CELERY_BEAT: "no"
+      ENABLE_MIGRATIONS: "yes"
+      ADMIN_USER: "admin"
+      ADMIN_EMAIL: "admin@example.local"
+      # ADMIN_PASSWORD: "set-a-password-here"
+    volumes:
+      - /mnt/aegir/media/videos/mediacms:/home/mediacms.io/mediacms
+    command: "./deploy/docker/prestart.sh"
+
+  mediacms-web:
+    image: mediacms/mediacms:latest
+    container_name: mediacms-web
+    restart: unless-stopped
+    depends_on:
+      - mediacms-migrations
+    environment:
+      ENABLE_CELERY_BEAT: "no"
+      ENABLE_CELERY_SHORT: "no"
+      ENABLE_CELERY_LONG: "no"
+      ENABLE_MIGRATIONS: "no"
+    ports:
+      - "8082:80"   # internal; reverse proxy in front
+    volumes:
+      - /mnt/aegir/media/videos/mediacms:/home/mediacms.io/mediacms
+
+  mediacms-celery-worker:
+    image: mediacms/mediacms:latest
+    container_name: mediacms-celery
+    restart: unless-stopped
+    depends_on:
+      - mediacms-migrations
+    environment:
+      ENABLE_UWSGI: "no"
+      ENABLE_NGINX: "no"
+      ENABLE_CELERY_BEAT: "no"
+      ENABLE_MIGRATIONS: "no"
+    volumes:
+      - /mnt/aegir/media/videos/mediacms:/home/mediacms.io/mediacms
+
+  mediacms-celery-beat:
+    image: mediacms/mediacms:latest
+    container_name: mediacms-celery-beat
+    restart: unless-stopped
+    depends_on:
+      - mediacms-redis
+    environment:
+      ENABLE_UWSGI: "no"
+      ENABLE_NGINX: "no"
+      ENABLE_CELERY_SHORT: "no"
+      ENABLE_CELERY_LONG: "no"
+      ENABLE_MIGRATIONS: "no"
+    volumes:
+      - /mnt/aegir/media/videos/mediacms:/home/mediacms.io/mediacms
+
+  mediacms-db:
+    image: postgres:15-alpine
+    container_name: mediacms-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: mediacms
+      POSTGRES_PASSWORD: mediacms-change-me
+      POSTGRES_DB: mediacms
+      TZ: Etc/UTC
+    volumes:
+      - /mnt/verkamaedhr/docker/mediacms-db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U mediacms -d mediacms"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  mediacms-redis:
+    image: redis:alpine
+    container_name: mediacms-redis
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
