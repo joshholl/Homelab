@@ -1,0 +1,38 @@
+version: "3.8"
+
+services:
+  hedgedoc:
+    image: lscr.io/linuxserver/hedgedoc:latest
+    container_name: hedgedoc
+    restart: unless-stopped
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Etc/UTC
+      - DB_HOST=hedgedoc-db
+      - DB_PORT=3306
+      - DB_USER=hedgedoc
+      - DB_PASS=hedgedoc-change-me
+      - DB_NAME=hedgedoc
+      - CMD_DOMAIN=notes.example.local
+      - CMD_URL_ADDPORT=false
+      - CMD_PROTOCOL_USESSL=true
+      - CMD_PORT=3000
+    volumes:
+      - /mnt/verkamaedhr/docker/hedgedoc/config:/config
+    ports:
+      - "3000:3000"    # internal; reverse proxy terminates TLS
+    depends_on:
+      - hedgedoc-db
+
+  hedgedoc-db:
+    image: mariadb:11
+    container_name: hedgedoc-db
+    restart: unless-stopped
+    environment:
+      - MYSQL_ROOT_PASSWORD=root-change-me
+      - MYSQL_DATABASE=hedgedoc
+      - MYSQL_USER=hedgedoc
+      - MYSQL_PASSWORD=hedgedoc-change-me
+    volumes:
+      - /mnt/verkamaedhr/docker/hedgedoc/db:/var/lib/mysql
