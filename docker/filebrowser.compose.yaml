@@ -1,0 +1,16 @@
+version: "3.8"
+
+services:
+  filebrowser:
+    image: filebrowser/filebrowser:latest
+    container_name: filebrowser
+    restart: unless-stopped
+    environment:
+      - PUID=1000
+      - PGID=1000
+    volumes:
+      - /mnt/aegir:/srv                       # root of the file browser
+      - /mnt/verkamaedhr/docker/filebrowser/filebrowser.db:/database/filebrowser.db
+      - /mnt/verkamaedhr/docker/filebrowser/settings.json:/config/settings.json
+    ports:
+      - "8083:80"       # internal; reverse proxy in front
