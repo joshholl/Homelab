@@ -1,0 +1,34 @@
+services:
+  plex:
+    image: plexinc/pms-docker:latest
+    container_name: plex
+    labels:
+      hoister.enable: true
+    network_mode: host
+    ports:
+      - 32400:32400/tcp
+    environment:
+      - PUID=568
+      - PGID=568
+      - TZ=America/New_York
+      - PLEX_CLAIM=
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=all
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ./plexmediaserver:/config
+      - /mnt/aegir/media/tv:/mnt/tv
+      - /mnt/aegir/media/movies:/mnt/movies
+      - /mnt/aegir/media/music:/mnt/music
+      - /mnt/aegir/media/porn:/mnt/porn
+      - /mnt/aegir/media/videos:/mnt/videos
+      - ./transcode:/mnt/transcode
+    restart: unless-stopped
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities:
+                - gpu
