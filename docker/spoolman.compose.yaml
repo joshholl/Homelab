@@ -1,0 +1,16 @@
+services:
+  spoolman:
+    image: ghcr.io/donkie/spoolman:latest
+    labels:
+      hoister.enable: true
+    ports:
+      - 7912:8000
+    environment:
+      - PUID=568
+      - PGID=568
+      - TZ=America/New_York
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ./data:/home/app/.local/share/spoolman
+    restart: unless-stopped
+networks: {}
