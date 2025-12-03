@@ -1,0 +1,26 @@
+# Immich stack
+#
+# Recommended: download the official docker-compose.yml and .env into this directory:
+#   wget -O docker-compose.upstream.yml \
+#     https://github.com/immich-app/immich/releases/latest/download/docker-compose.yml
+#   wget -O .env \
+#     https://github.com/immich-app/immich/releases/latest/download/example.env
+#
+# Then edit .env so that:
+#   UPLOAD_LOCATION=/mnt/aegir/media/immich-library
+#   DB_DATA_LOCATION=/mnt/verkamaedhr/docker/immich-db
+#
+# To deploy:
+#   docker compose -f docker-compose.upstream.yml up -d
+#
+# This file exists mainly so Dockge sees a stack here, and to document intent.
+
+version: "3.8"
+
+services:
+  # This is a placeholder; real services live in docker-compose.upstream.yml
+  note:
+    image: alpine:3.20
+    container_name: immich-note
+    command: ["sh", "-c", "echo 'See docker-compose.upstream.yml and .env for the real stack.' && sleep 3600"]
+    restart: unless-stopped
